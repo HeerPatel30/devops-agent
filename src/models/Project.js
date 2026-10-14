@@ -23,6 +23,7 @@ class Project {
     this.pipelines = [];
     this.environmentConfigs = [];
     this.securityFindings = [];
+    this.aiAssessment = null;
 
     this.validate();
   }
@@ -74,6 +75,7 @@ class Project {
       pipelines: this.pipelines,
       environmentConfigs: this.environmentConfigs,
       securityFindings: this.securityFindings,
+      aiAssessment: this.aiAssessment,
     };
   }
 }

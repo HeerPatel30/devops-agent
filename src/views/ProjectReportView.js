@@ -12,6 +12,7 @@ class ProjectReportView {
    * @param {import('../models/Project')} project - The Project model instance
    * @param {Object} [options={}] - Output configuration options
    * @param {string} [options.format='terminal'] - 'terminal' or 'json'
+   * @param {boolean} [options.showAiTip=false] - Whether to show AI configuration tip
    */
   renderReport(project, options = {}) {
     if (options.format === 'json') {
@@ -31,8 +32,20 @@ class ProjectReportView {
     logger.raw(`${colors.bright}Root Path:${colors.reset}       ${project.rootPath}`);
     logger.raw(`${colors.bright}Status:${colors.reset}          ${colors.green}${project.status}${colors.reset}`);
     logger.raw(`${colors.bright}Validated At:${colors.reset}    ${project.validatedAt.toLocaleString()}`);
+
+    // Gemini AI Assessment Section
+    if (project.aiAssessment) {
+      logger.raw(subDivider);
+      logger.raw(`${colors.bright}${colors.yellow}🤖 GEMINI AI DEVOPS ASSESSMENT (${project.aiAssessment.model}):${colors.reset}`);
+      logger.raw(subDivider);
+      logger.raw(project.aiAssessment.text);
+    } else if (options.showAiTip) {
+      logger.raw(subDivider);
+      logger.raw(`${colors.dim}💡 Tip: Add GEMINI_API_KEY to your .env file to enable Gemini AI DevOps insights!${colors.reset}`);
+    }
+
     logger.raw(subDivider);
-    logger.raw(`${colors.bright}Active Milestone:${colors.reset} Milestone 1 (MVC Foundation & Path Validation)`);
+    logger.raw(`${colors.bright}Active Milestone:${colors.reset} Milestone 1 + Gemini AI Layer`);
     logger.raw(`${colors.dim}Ready for Milestone 2: Project Discovery (detecting stacks, CI/CD, manifests)${colors.reset}`);
     logger.raw(divider);
     logger.raw('');
@@ -81,11 +94,12 @@ class ProjectReportView {
     logger.raw('  npm run dev -- <command> [arguments] [options]');
     logger.raw('');
     logger.raw(`${colors.bright}COMMANDS:${colors.reset}`);
-    logger.raw('  analyze <path>    Validate and inspect a target software project repository');
+    logger.raw('  analyze <path>    Validate, inspect, and assess a target software project');
     logger.raw('  help, --help, -h  Display this help guide');
     logger.raw('');
     logger.raw(`${colors.bright}OPTIONS:${colors.reset}`);
     logger.raw('  --json            Output results in structured JSON format');
+    logger.raw('  --no-ai           Skip Gemini AI assessment even if GEMINI_API_KEY is configured');
     logger.raw('');
     logger.raw(`${colors.bright}EXAMPLES:${colors.reset}`);
     logger.raw('  node index.js analyze .');

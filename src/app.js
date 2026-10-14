@@ -17,9 +17,9 @@ class App {
    * Parses CLI arguments and executes the requested command.
    * 
    * @param {string[]} args - Process arguments (e.g. process.argv.slice(2))
-   * @returns {*}
+   * @returns {Promise<*>}
    */
-  run(args = []) {
+  async run(args = []) {
     if (args.length === 0) {
       this.projectController.showHelp();
       return;
@@ -30,8 +30,11 @@ class App {
 
     // Parse options
     const isJson = restArgs.includes('--json');
+    const noAi = restArgs.includes('--no-ai');
+
     const options = {
       format: isJson ? 'json' : 'terminal',
+      noAi,
     };
 
     // Filter out options to get positional parameters
@@ -40,7 +43,7 @@ class App {
     switch (command) {
       case 'analyze': {
         const targetPath = positionalArgs[0];
-        return this.projectController.analyze(targetPath, options);
+        return await this.projectController.analyze(targetPath, options);
       }
 
       case 'help':
