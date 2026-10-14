@@ -1,197 +1,152 @@
 # Universal DevOps Automation Agent
 
-A modular, enterprise-ready DevOps automation tool built in pure JavaScript (Node.js CommonJS) following clean **MVC (Model-View-Controller)** architecture.
-
-Designed for real DevOps teams, this agent inspects software repositories, validates environment configurations, orchestrates CI/CD pipelines, executes security scans, and coordinates multi-cloud deployments deterministically (with optional AI-assisted diagnosis in later milestones).
+A modular, enterprise-ready DevOps automation tool built in Node.js (CommonJS) following clean **Routes → Controllers → Models → Services** REST API architecture.
 
 ---
 
-## Architecture: Why MVC for a DevOps Agent?
+## 🏛️ Code Flow & Architecture Explained (Plain English)
 
-Even though MVC is traditionally associated with web applications, applying MVC to a CLI automation agent enforces strict separation of concerns, high testability, and clean maintainability:
+If you have ever built an Express API or eaten at a restaurant, you already understand this architecture! Here is the exact analogy:
 
 ```
-                      +-------------------+
-                      |     CLI Input     |
-                      |   (node index)    |
-                      +---------+---------+
-                                |
-                                v
-                      +-------------------+
-                      |     App Router    |
-                      |    (src/app.js)   |
-                      +---------+---------+
-                                |
-                                v
-                    +-----------------------+
-                    |   ProjectController   | <---+ Coordinates operations
-                    +-----------+-----------+     | Thin logic, no business rules
-                                |                 |
-         +----------------------+-----------------+
-         |                                        |
-         v                                        v
-+-----------------+                      +-------------------+
-|  Project Model  |                      | ProjectReportView |
-| (src/models)    |                      | (src/views)       |
-+--------+--------+                      +---------+---------+
-         | Encapsulates data & rules               | Formats output (Terminal / JSON)
-         |                                         v
-         |                               +-------------------+
-         +-----------------------------> |  Terminal Output  |
-                                         +-------------------+
++-----------------------------------------------------------------------------------------+
+|                                    THE REQUEST FLOW                                     |
++-----------------------------------------------------------------------------------------+
+
+  1. CLIENT (Postman / Browser / Terminal)
+     Sends: POST http://localhost:3000/api/projects/analyze
+     Body:  { "path": "C:\\Projects\\my-app" }
+        |
+        v
+  2. SERVER (server.js)
+     - Receives HTTP request, parses JSON body with express.json().
+     - Forwards request to /api routes.
+        |
+        v
+  3. ROUTE (src/routes/projectRoutes.js)
+     - The Receptionist / Traffic Police.
+     - Matches: POST /api/projects/analyze -> calls projectController.analyzeProject(req, res).
+        |
+        v
+  4. CONTROLLER (src/controllers/ProjectController.js)
+     - The Kitchen Manager.
+     - Reads req.body.path.
+     - Calls pathValidator to check if the directory exists.
+     - Creates the Project Model.
+     - Calls GeminiService to get AI DevOps advice.
+     - Sends HTTP Response: res.status(200).json({ success: true, data: project }).
+        |
+        +----------------------------+----------------------------+
+        |                                                         |
+        v                                                         v
+  5. MODEL (src/models/Project.js)                 6. SERVICE (src/services/GeminiService.js)
+     - The Blueprint / Recipe.                        - The Specialist Chef.
+     - Holds project name, path, status, timestamp.   - Communicates with Google Gemini 2.5 Flash.
+     - Ensures data validity.                         - Provides DevOps assessments.
 ```
-
-### Component Responsibilities:
-
-1. **Models (`src/models/`)**:
-   - Represent domain entities and business rules (e.g. `Project.js`).
-   - Validate data consistency (e.g. ensuring absolute root paths and valid names).
-   - Never interact directly with user input, terminal output, or cloud APIs.
-
-2. **Views (`src/views/`)**:
-   - Responsible strictly for formatting data for humans or automation (e.g. `ProjectReportView.js`).
-   - Renders terminal reports with status banners, and optionally outputs structured JSON.
-   - Contains zero filesystem access or business logic.
-
-3. **Controllers (`src/controllers/`)**:
-   - Act as coordinators (e.g. `ProjectController.js`).
-   - Receives commands and parameters from the CLI router (`src/app.js`).
-   - Invokes validators, services, and models.
-   - Passes processed data to the View and manages process exit codes.
-
-4. **Utilities (`src/utils/`)**:
-   - Zero-dependency helpers for path validation (`pathValidator.js`), styled console logging (`logger.js`), and centralized error handling (`errorHandler.js`).
 
 ---
 
-## Directory Structure (Milestone 1)
+## 📁 Directory Layout
 
 ```
 devops-automation-agent/
-├── package.json                   # Project manifest, scripts, and configuration
-├── .gitignore                     # Git ignore rules for node_modules, logs, reports
-├── .env.example                   # Template for environment configuration
-├── README.md                      # Architecture documentation and guides
-├── index.js                       # Executable CLI entrypoint
+├── server.js                      # Express API server entrypoint (npm start)
+├── index.js                       # Optional CLI runner (npm run cli)
+├── package.json                   # Dependencies & npm scripts
+├── .env                           # GEMINI_API_KEY & server PORT
+├── .env.example                   # Environment configuration template
+├── README.md                      # Architecture guide
 ├── src/
-│   ├── app.js                     # Application command router & argument parser
-│   ├── models/
-│   │   └── Project.js             # Model representing target repository state
-│   ├── views/
-│   │   └── ProjectReportView.js   # Formatter for terminal and JSON reporting
+│   ├── routes/
+│   │   ├── index.js               # Main API router (/api)
+│   │   └── projectRoutes.js       # Routes: POST /analyze, GET /health
 │   ├── controllers/
-│   │   └── ProjectController.js   # MVC coordinator for project inspection
+│   │   └── ProjectController.js   # (req, res) controller handlers
+│   ├── models/
+│   │   └── Project.js             # Project domain entity blueprint
+│   ├── services/
+│   │   └── GeminiService.js       # Google Gemini 2.5 Flash AI integration
+│   ├── views/
+│   │   └── ProjectReportView.js   # Terminal formatter for CLI mode
 │   └── utils/
-│       ├── logger.js              # ANSI-colored console logging utility
-│       ├── pathValidator.js       # Directory path existence and access validator
-│       └── errorHandler.js        # Centralized error handler
+│       ├── envLoader.js           # Native .env loader
+│       ├── pathValidator.js       # Directory path validator
+│       ├── errorHandler.js        # Centralized error handler
+│       └── logger.js              # ANSI color logger
 └── tests/
-    ├── Project.test.js            # Unit tests for Project domain model
-    ├── ProjectController.test.js  # Unit tests for controller flow & view delegation
-    └── pathValidator.test.js      # Unit tests for directory path validation
+    ├── apiRoutes.test.js          # REST API route integration tests
+    ├── GeminiService.test.js      # Gemini AI service tests
+    ├── Project.test.js            # Model unit tests
+    ├── ProjectController.test.js  # Controller unit tests
+    └── pathValidator.test.js      # Filesystem validation tests
 ```
 
 ---
 
-## Prerequisites
+## 🚀 Quick Start Guide
 
-- **Node.js**: Version 18.0.0 or higher (Node 24+ recommended).
-- **npm**: Version 9.0.0 or higher.
-- **Operating System**: Windows PowerShell, macOS, or Linux.
-
-Zero third-party runtime dependencies are required for Milestone 1.
-
----
-
-## Installation & Setup
-
-1. Open Windows PowerShell or your terminal.
-2. Navigate to the project directory:
-   ```powershell
-   cd "C:\Users\HeerPatel\.gemini\antigravity\scratch\devops-automation-agent"
-   ```
-3. Verify Node.js and npm versions:
-   ```powershell
-   node -v
-   npm -v
-   ```
-
----
-
-## CLI Usage
-
-### 1. View Help Guide
-```powershell
-node index.js
-# or
-node index.js --help
+### 1. Setup your Gemini Key in `.env`
+Open `.env` and paste your Gemini API key:
+```env
+PORT=3000
+GEMINI_API_KEY=AIzaSy...your_key_here
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
-### 2. Analyze a Project Directory
-Pass an existing repository directory path (relative or absolute):
-
+### 2. Start the API Server
 ```powershell
-# Analyze current directory
-npm run dev -- analyze "."
-
-# Analyze with absolute path
-npm run dev -- analyze "C:\Users\HeerPatel\.gemini\antigravity\scratch\devops-automation-agent"
-
-# Direct invocation
-node index.js analyze "."
+npm start
+```
+Output:
+```
+[SUCCESS] DevOps Automation Agent API Server running on port 3000!
+[INFO] Root:   http://localhost:3000
+[INFO] Health: http://localhost:3000/api/projects/health
+[INFO] Docs:   POST http://localhost:3000/api/projects/analyze
 ```
 
-### 3. Output in Structured JSON Format
-Add the `--json` flag to emit machine-readable JSON:
+### 3. Test the Endpoints
 
+#### Check Server Health (`GET /api/projects/health`):
+Open your browser at `http://localhost:3000/api/projects/health` or in PowerShell:
 ```powershell
-node index.js analyze "." --json
+Invoke-RestMethod -Uri "http://localhost:3000/api/projects/health"
+```
+Response:
+```json
+{
+  "status": "UP",
+  "uptimeSeconds": 12,
+  "geminiConfigured": true,
+  "timestamp": "2026-10-14T06:30:00.000Z"
+}
 ```
 
-### 4. Error Handling Examples
-The agent safely validates target directories before executing any operations:
-
+#### Analyze a Repository (`POST /api/projects/analyze`):
+In Postman or PowerShell:
 ```powershell
-# Missing path argument
-node index.js analyze
-
-# Non-existent path
-node index.js analyze "C:\DoesNotExist"
-
-# Passing a single file instead of a folder
-node index.js analyze "package.json"
+Invoke-RestMethod -Uri "http://localhost:3000/api/projects/analyze" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"path": "."}'
 ```
 
 ---
 
-## Running Automated Tests
+## 🧪 Running Automated Tests
 
-Tests are written using Node.js's native test runner (`node:test` and `node:assert`). They run instantly without external testing frameworks:
-
+All 22 unit & integration tests run in under 1 second with zero test frameworks:
 ```powershell
 npm test
 ```
-
-Expected output:
-```
+```text
+✔ GeminiService (4 tests pass)
 ✔ Project Model (5 tests pass)
-✔ ProjectController (MVC Coordination) (3 tests pass)
+✔ ProjectController (MVC Coordination) (4 tests pass)
+✔ DevOps Agent Express API Routes (4 tests pass)
 ✔ PathValidator Utility (5 tests pass)
-ℹ tests 13
-ℹ pass 13
+ℹ tests 22
+ℹ pass 22
 ℹ fail 0
 ```
-
----
-
-## Roadmap
-
-- [x] **Milestone 1: MVC CLI Foundation** (Current)
-- [ ] **Milestone 2: Project Discovery** (Detecting Node.js, .NET, Python, Docker, K8s, CI/CD YAML)
-- [ ] **Milestone 3: Environment Configuration Audit** (Detecting secrets, missing variables, `.env.example`)
-- [ ] **Milestone 4: Security Policy Checks** (Gitleaks, Trivy, npm audit, SonarQube)
-- [ ] **Milestone 5: Azure DevOps CI/CD Integration** (Inspecting and orchestrating pipelines)
-- [ ] **Milestone 6: Azure Key Vault Integration** (Secret reference validation and managed identity)
-- [ ] **Milestone 7: Controlled Multi-Cloud Deployments** (Pre-checks, approval gates, health checks)
-- [ ] **Milestone 8: Additional Cloud & Secret Providers** (AWS, Google Cloud, Kubernetes)
-- [ ] **Milestone 9: AI Diagnosis & Planning** (Explaining failures and recommending fixes)
