@@ -7,6 +7,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "cli": "node index.js",
+    "chat": "node index.js chat",
+    "analyze": "node index.js analyze",
     "test": "node --test"
   },
   "keywords": [

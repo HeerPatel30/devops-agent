@@ -26,5 +26,9 @@ loadEnvironment();
 module.exports = {
   loadEnvironment,
   getGeminiApiKey: () => process.env.GEMINI_API_KEY || null,
-  getGeminiModel: () => process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  getGeminiModel: () => process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
+  getGeminiMaxTokens: () => {
+    const val = parseInt(process.env.GEMINI_MAX_TOKENS, 10);
+    return Number.isInteger(val) && val > 0 ? val : 300;
+  },
 };

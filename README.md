@@ -123,30 +123,88 @@ Response:
 }
 ```
 
-#### Analyze a Repository (`POST /api/projects/analyze`):
+#### Analyze a Local Folder or Remote Git Repository (`POST /api/projects/analyze`):
 In Postman or PowerShell:
 ```powershell
+# Analyze local folder:
 Invoke-RestMethod -Uri "http://localhost:3000/api/projects/analyze" `
   -Method POST `
   -ContentType "application/json" `
   -Body '{"path": "."}'
+
+# Analyze remote Git URL:
+Invoke-RestMethod -Uri "http://localhost:3000/api/projects/analyze" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"path": "https://github.com/your-username/your-repo"}'
 ```
+
+#### Chat with Agent via API (`POST /api/projects/chat`):
+```powershell
+Invoke-RestMethod -Uri "http://localhost:3000/api/projects/chat" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"message": "How do I configure Docker for this Node.js app?"}'
+```
+
+---
+
+## 🔍 CLI Commands
+
+### 1. Analyze Local Folder or Remote Git URL:
+```powershell
+# Analyze current folder:
+node index.js analyze .
+
+# Analyze any remote GitHub / GitLab / Bitbucket repository:
+node index.js analyze "https://github.com/your-user/your-repo"
+```
+
+### 2. Interactive Terminal Chat:
+```powershell
+node index.js chat
+# or:
+npm run chat
+```
+
+### 3. One-Off Question (`ask`):
+```powershell
+node index.js ask "How do I setup a GitHub Actions CI pipeline for Node.js?"
+```
+
+---
+
+## 🛡️ Quota & Token Protection Layer
+
+To protect your Gemini quota, avoid `429 Too Many Requests`, and keep latency low:
+
+1. **Token Budget (`GEMINI_MAX_TOKENS=300` in `.env`):**
+   - Limits response generation to ~300 tokens per prompt (crisp, direct answers).
+2. **Input Prompt Length Cap:**
+   - Prompts are validated and capped at 1,000 characters to prevent huge payload abuse.
+3. **Sliding Window History:**
+   - In chat mode, only the last 4 turns (2 user questions + 2 agent replies) are passed to Gemini, keeping input token usage minimal.
+4. **API Rate Limiter (10 Requests / Minute):**
+   - Pure in-memory middleware throttles rapid API calls per IP with `Retry-After` headers.
 
 ---
 
 ## 🧪 Running Automated Tests
 
-All 22 unit & integration tests run in under 1 second with zero test frameworks:
+All 37 unit & integration tests run in ~1 second with zero test frameworks:
 ```powershell
 npm test
 ```
 ```text
-✔ GeminiService (4 tests pass)
+✔ GeminiService (7 tests pass)
+✔ GitService (4 tests pass)
 ✔ Project Model (5 tests pass)
 ✔ ProjectController (MVC Coordination) (4 tests pass)
-✔ DevOps Agent Express API Routes (4 tests pass)
+✔ StackDetectorService (2 tests pass)
+✔ DevOps Agent Express API Routes (7 tests pass)
 ✔ PathValidator Utility (5 tests pass)
-ℹ tests 22
-ℹ pass 22
+✔ RateLimiter Utility (3 tests pass)
+ℹ tests 37
+ℹ pass 37
 ℹ fail 0
 ```

@@ -42,8 +42,17 @@ class App {
 
     switch (command) {
       case 'analyze': {
-        const targetPath = positionalArgs[0];
+        const targetPath = positionalArgs[0] || '.';
         return await this.projectController.analyze(targetPath, options);
+      }
+
+      case 'chat': {
+        return await this.projectController.startInteractiveChat();
+      }
+
+      case 'ask': {
+        const question = positionalArgs.join(' ');
+        return await this.projectController.askQuestion(question);
       }
 
       case 'help':

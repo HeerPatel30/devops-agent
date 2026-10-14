@@ -31,7 +31,25 @@ class ProjectReportView {
     logger.raw(`${colors.bright}Project Name:${colors.reset}    ${colors.green}${project.name}${colors.reset}`);
     logger.raw(`${colors.bright}Root Path:${colors.reset}       ${project.rootPath}`);
     logger.raw(`${colors.bright}Status:${colors.reset}          ${colors.green}${project.status}${colors.reset}`);
+    logger.raw(`${colors.bright}Source Type:${colors.reset}     ${project.sourceType === 'git' ? `Remote Git (${project.gitUrl})` : 'Local Filesystem'}`);
     logger.raw(`${colors.bright}Validated At:${colors.reset}    ${project.validatedAt.toLocaleString()}`);
+
+    // Detected Stack Section
+    if (project.detectedStack) {
+      const stack = project.detectedStack;
+      logger.raw(subDivider);
+      logger.raw(`${colors.bright}${colors.cyan}🔍 DETECTED ARCHITECTURE & TECH STACK:${colors.reset}`);
+      logger.raw(subDivider);
+      logger.raw(`${colors.bright}Classification:${colors.reset}  ${colors.green}${stack.classification}${colors.reset}`);
+      logger.raw(`${colors.bright}Languages:${colors.reset}       ${stack.languages.length ? stack.languages.join(', ') : 'None detected'}`);
+      logger.raw(`${colors.bright}Frameworks:${colors.reset}      ${stack.frameworks.length ? stack.frameworks.join(', ') : 'None detected'}`);
+      logger.raw(`${colors.bright}Databases:${colors.reset}       ${stack.databases.length ? stack.databases.join(', ') : 'None detected'}`);
+      logger.raw(`${colors.bright}Container:${colors.reset}       ${stack.devops.docker ? 'Dockerfile detected' : 'None'}${stack.devops.dockerCompose ? ' + Docker Compose' : ''}`);
+      logger.raw(`${colors.bright}CI/CD Pipelines:${colors.reset} ${stack.devops.ciCd.length ? stack.devops.ciCd.join(', ') : 'No CI/CD pipeline detected'}`);
+      if (stack.manifestsFound && stack.manifestsFound.length > 0) {
+        logger.raw(`${colors.bright}Key Manifests:${colors.reset}   ${stack.manifestsFound.slice(0, 6).join(', ')}`);
+      }
+    }
 
     // Gemini AI Assessment Section
     if (project.aiAssessment) {
@@ -45,8 +63,7 @@ class ProjectReportView {
     }
 
     logger.raw(subDivider);
-    logger.raw(`${colors.bright}Active Milestone:${colors.reset} Milestone 1 + Gemini AI Layer`);
-    logger.raw(`${colors.dim}Ready for Milestone 2: Project Discovery (detecting stacks, CI/CD, manifests)${colors.reset}`);
+    logger.raw(`${colors.bright}Active Milestone:${colors.reset} Milestone 2 (Universal Stack Discovery + Gemini SRE)`);
     logger.raw(divider);
     logger.raw('');
   }
@@ -95,6 +112,8 @@ class ProjectReportView {
     logger.raw('');
     logger.raw(`${colors.bright}COMMANDS:${colors.reset}`);
     logger.raw('  analyze <path>    Validate, inspect, and assess a target software project');
+    logger.raw('  chat              Start interactive terminal chat session with DevOps Agent');
+    logger.raw('  ask "<question>"  Ask a single DevOps question directly in terminal');
     logger.raw('  help, --help, -h  Display this help guide');
     logger.raw('');
     logger.raw(`${colors.bright}OPTIONS:${colors.reset}`);
@@ -102,6 +121,8 @@ class ProjectReportView {
     logger.raw('  --no-ai           Skip Gemini AI assessment even if GEMINI_API_KEY is configured');
     logger.raw('');
     logger.raw(`${colors.bright}EXAMPLES:${colors.reset}`);
+    logger.raw('  node index.js chat');
+    logger.raw('  node index.js ask "How do I create a multi-stage Dockerfile for Node.js?"');
     logger.raw('  node index.js analyze .');
     logger.raw('  npm run dev -- analyze "C:\\my-repo"');
     logger.raw('  npm run dev -- analyze "C:\\my-repo" --json');

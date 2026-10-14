@@ -23,6 +23,7 @@ app.get('/', (req, res) => {
     docs: {
       health: 'GET /api/projects/health',
       analyze: 'POST /api/projects/analyze (body: { "path": "C:\\path\\to\\project" })',
+      chat: 'POST /api/projects/chat (body: { "message": "How do I setup CI/CD for Docker?" })',
     },
     geminiStatus: getGeminiApiKey() ? `Connected (${getGeminiModel()})` : 'Not configured (add GEMINI_API_KEY in .env)',
   });

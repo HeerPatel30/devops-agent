@@ -18,7 +18,9 @@ class Project {
     this.status = status;
     this.validatedAt = validatedAt instanceof Date ? validatedAt : new Date(validatedAt);
 
-    // Initial placeholders for progressive milestones
+    this.sourceType = 'local';
+    this.gitUrl = null;
+    this.detectedStack = null;
     this.technologies = [];
     this.pipelines = [];
     this.environmentConfigs = [];
@@ -70,6 +72,9 @@ class Project {
       name: this.name,
       rootPath: this.rootPath,
       status: this.status,
+      sourceType: this.sourceType,
+      gitUrl: this.gitUrl,
+      detectedStack: this.detectedStack,
       validatedAt: this.validatedAt.toISOString(),
       technologies: this.technologies,
       pipelines: this.pipelines,

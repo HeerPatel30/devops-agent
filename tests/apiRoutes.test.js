@@ -70,4 +70,42 @@ describe('DevOps Agent Express API Routes', () => {
     assert.strictEqual(json.data.name, 'devops-automation-agent');
     assert.strictEqual(json.data.status, 'VALIDATED');
   });
+
+  test('POST /api/projects/chat returns 400 when message is missing', async () => {
+    const res = await fetch(`${baseUrl}/api/projects/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+
+    assert.strictEqual(res.status, 400);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.match(json.error, /Missing required field "message"/i);
+  });
+
+  test('POST /api/projects/chat returns 400 when message exceeds 1000 characters', async () => {
+    const longMessage = 'X'.repeat(1005);
+    const res = await fetch(`${baseUrl}/api/projects/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: longMessage }),
+    });
+
+    assert.strictEqual(res.status, 400);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.match(json.error, /Prompt exceeds maximum allowed length/i);
+  });
+
+  test('AI routes include rate limit headers', async () => {
+    const res = await fetch(`${baseUrl}/api/projects/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+
+    assert.ok(res.headers.has('x-ratelimit-limit'));
+    assert.ok(res.headers.has('x-ratelimit-remaining'));
+  });
 });
