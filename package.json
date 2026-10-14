@@ -4,8 +4,9 @@
   "description": "Universal DevOps Automation Agent built with Node.js and MVC architecture",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js",
+    "start": "node server.js",
+    "dev": "node server.js",
+    "cli": "node index.js",
     "test": "node --test"
   },
   "keywords": [
@@ -19,5 +20,8 @@
   "license": "ISC",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
   }
 }
