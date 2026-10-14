@@ -1,0 +1,23 @@
+{
+  "name": "devops-automation-agent",
+  "version": "0.1.0",
+  "description": "Universal DevOps Automation Agent built with Node.js and MVC architecture",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "devops",
+    "automation",
+    "agent",
+    "mvc",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
